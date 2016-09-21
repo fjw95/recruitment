@@ -8,36 +8,32 @@ type Queue interface {
 	Keys() []interface{}
 }
 
-/*type QueueStruct struct {
-	arrayInterface []interface{}
-}*/
+type QueueStruct struct {
+	key []interface{}
+}
 
 var (
 	arrayInterface []interface{}
 )
 
 func New(size int) Queue {
-	var q Queue
+	var q Queue = QueueStruct{make([]interface{}, size)}
 	return q
 }
 
-/*func (q QueueStruct) new(size int) Queue {
-	arrayInterface = make([]interface{}, size)
-	return q.queue
-}
-*/
-func Push(key interface{}) {
+
+func (q QueueStruct)Push(key interface{}) {
 	arrayInterface = append(arrayInterface, key)
 }
 
-func Pop() interface{} {
+func (q QueueStruct) Pop() interface{} {
 	lastIndex := len(arrayInterface) - 1
 	popValue := arrayInterface[lastIndex]
 	arrayInterface = arrayInterface[:lastIndex-1]
 	return popValue
 }
 
-func Contains(key interface{}) bool {
+func (q QueueStruct) Contains(key interface{}) bool {
 	for _, v := range arrayInterface {
 		if v == key {
 			return true
@@ -46,10 +42,10 @@ func Contains(key interface{}) bool {
 	return false
 }
 
-func Len() int {
+func (q QueueStruct) Len() int {
 	return len(arrayInterface)
 }
 
-func Keys() []interface{} {
-	return arrayInterface[:len(arrayInterface)-1]
+func (q QueueStruct) Keys() []interface{} {
+	return q.key
 }
