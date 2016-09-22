@@ -89,20 +89,4 @@ func main() {
 	targetMapFIles = getMapFiles(targetPath, "", 0, targetMapFIles)
 
 	compare(sourceMapFiles, targetMapFIles)
-	/*for k, v := range targetMapFIles {
-		fmt.Println(k + v)
-
-	}
-	for k, v := range sourceMapFiles {
-		fmt.Println(k + v)
-
-	}*/
-	/*files, err := ioutil.ReadDir("./recruitment")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, file := range files {
-		fmt.Println(file.Name())
-	}*/
 }
