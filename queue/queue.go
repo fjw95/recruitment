@@ -9,32 +9,52 @@ type Queue interface {
 }
 
 type QueueStruct struct {
-	key []interface{}
+	Value []interface{}
+	Size  int
 }
 
-var (
-	arrayInterface []interface{}
-)
-
 func New(size int) Queue {
-	var q Queue = QueueStruct{make([]interface{}, size)}
+	var queStr QueueStruct
+	queStr.Value = make([]interface{}, size)
+	queStr.Size = size
+	var q Queue = queStr
 	return q
 }
 
+func (q QueueStruct) Push(key interface{}) {
+	if q.Value[0] == nil {
+		q.Value[0] = key
+		return
+	} else {
+		if q.Value[q.Size-1] == nil {
+			for i := q.Len() - 1; i >= 0; i-- {
+				if q.Value[i] != nil {
+					q.Value[i+1] = q.Value[i]
+				}
+			}
 
-func (q QueueStruct)Push(key interface{}) {
-	arrayInterface = append(arrayInterface, key)
+		} else {
+			for i := q.Len() - 2; i >= 0; i-- {
+				if q.Value[i] != nil {
+					q.Value[i+1] = q.Value[i]
+				}
+			}
+		}
+	}
+	q.Value[0] = key
 }
 
 func (q QueueStruct) Pop() interface{} {
-	lastIndex := len(arrayInterface) - 1
-	popValue := arrayInterface[lastIndex]
-	arrayInterface = arrayInterface[:lastIndex-1]
-	return popValue
+	var popItem interface{}
+
+	for i := q.Len() - 1; i >= 0; i-- {
+		popItem, q.Value[i] = q.Value[i], nil
+	}
+	return popItem
 }
 
 func (q QueueStruct) Contains(key interface{}) bool {
-	for _, v := range arrayInterface {
+	for _, v := range q.Value {
 		if v == key {
 			return true
 		}
@@ -43,9 +63,19 @@ func (q QueueStruct) Contains(key interface{}) bool {
 }
 
 func (q QueueStruct) Len() int {
-	return len(arrayInterface)
+	var filledSlots int
+
+	for _, k := range q.Value {
+		if k == nil {
+			return filledSlots
+		} else {
+			filledSlots++
+		}
+	}
+
+	return filledSlots
 }
 
 func (q QueueStruct) Keys() []interface{} {
-	return q.key
+	return q.Value
 }
