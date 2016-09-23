@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/md5"
 	"fmt"
+	_ "io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -11,6 +13,45 @@ const (
 	sourcePath = "/source"
 	targetPath = "/target"
 )
+
+func compareContentFile(source string, target string) bool {
+	dataSource, _ := ioutil.ReadFile(source)
+	dataTarget, _ := ioutil.ReadFile(target)
+
+	if md5.Sum(dataSource) != md5.Sum(dataTarget) {
+		return true
+	}
+	return false
+}
+
+func compareFile(sourceMapFiles map[string]string, targetMapFIles map[string]string) {
+	resultMap := []string{}
+
+	for kSourceFile, vSourceFile := range sourceMapFiles {
+		for kTargFile, vTargFile := range targetMapFIles {
+			if kSourceFile == kTargFile && vSourceFile == vTargFile {
+				if vSourceFile == "Root" {
+					source, _ := filepath.Abs("." + sourcePath + "/" + kSourceFile)
+					target, _ := filepath.Abs("." + targetPath + "/" + kTargFile)
+					if compareContentFile(source, target) {
+						message := kSourceFile + " Modified"
+						resultMap = append(resultMap, message)
+					}
+				} else {
+					source, _ := filepath.Abs("." + sourcePath + "/" + vSourceFile + "/" + kSourceFile)
+					target, _ := filepath.Abs("." + sourcePath + "/" + vSourceFile + "/" + kSourceFile)
+					if compareContentFile(source, target) {
+						message := kSourceFile + "/" + vSourceFile + " Modified"
+						resultMap = append(resultMap, message)
+					}
+				}
+			}
+		}
+	}
+	for _, v := range resultMap {
+		fmt.Println(v)
+	}
+}
 
 func compare(sourceMapFiles map[string]string, targetMapFIles map[string]string) {
 
@@ -40,7 +81,7 @@ func compare(sourceMapFiles map[string]string, targetMapFIles map[string]string)
 			}
 		}
 		if isExist == false {
-			message := kTarg + "/" + vTarg + " Delete"
+			message := vTarg + "/" + kTarg + " Delete"
 			resultMap = append(resultMap, message)
 		}
 	}
@@ -51,15 +92,16 @@ func compare(sourceMapFiles map[string]string, targetMapFIles map[string]string)
 
 }
 
-func getMapFiles(source string, sourceFolder string, level int, mapFiles map[string]string) map[string]string {
+func getMapFiles(root string, source string, sourceFolder string, level int, mapFiles map[string]string) map[string]string {
 
 	var sourceFiles []os.FileInfo
 
-	if level > 0 && sourceFolder != "" {
+	if level > 0 && sourceFolder != "" && root != "" {
 		source, _ = filepath.Abs(source + "/" + sourceFolder)
 		sourceFiles, _ = ioutil.ReadDir(source)
 	} else {
 		source, _ = filepath.Abs("." + source)
+		root = source
 		sourceFiles, _ = ioutil.ReadDir(source)
 		mapFiles = map[string]string{}
 	}
@@ -67,10 +109,11 @@ func getMapFiles(source string, sourceFolder string, level int, mapFiles map[str
 	for _, file := range sourceFiles {
 		if file.IsDir() {
 			level++
-			mapFiles = getMapFiles(source, file.Name(), level, mapFiles)
+			mapFiles = getMapFiles(root, source, file.Name(), level, mapFiles)
 		} else {
 			if level > 0 {
-				mapFiles[file.Name()] = sourceFolder
+				valSource, _ := filepath.Rel(root, source)
+				mapFiles[file.Name()] = valSource
 			} else {
 				mapFiles[file.Name()] = "Root"
 			}
@@ -85,8 +128,9 @@ func main() {
 	sourceMapFiles := map[string]string{}
 	targetMapFIles := map[string]string{}
 
-	sourceMapFiles = getMapFiles(sourcePath, "", 0, sourceMapFiles)
-	targetMapFIles = getMapFiles(targetPath, "", 0, targetMapFIles)
+	sourceMapFiles = getMapFiles("", sourcePath, "", 0, sourceMapFiles)
+	targetMapFIles = getMapFiles("", targetPath, "", 0, targetMapFIles)
 
 	compare(sourceMapFiles, targetMapFIles)
+	compareFile(sourceMapFiles, targetMapFIles)
 }
