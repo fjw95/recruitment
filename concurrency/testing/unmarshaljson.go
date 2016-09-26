@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -50,6 +51,8 @@ func ReadResponseBody(response *http.Response) ([]byte, error) {
 func UnmarshallJson(responseBody []byte) ([]interface{}, error) {
 
 	var w Wilayah
+
+	responseBody = bytes.TrimPrefix(responseBody, []byte{239, 187, 191})
 
 	err := json.Unmarshal(responseBody, &w)
 

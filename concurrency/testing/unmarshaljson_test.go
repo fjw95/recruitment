@@ -4,10 +4,13 @@ import (
 	"testing"
 )
 
+var (
+	api = "http://jendela.data.kemdikbud.go.id/api/index.php/CWilayah/wilayahGET"
+)
+
 func TestUnmarshalJsonGET(t *testing.T) {
 
-	api := "http://jendela.data.kemdikbud.go.id/api/index.php/CWilayah/wilayahGET"
-	request, err := NewRequest(api, "GET")
+	request, err := NewRequest(api, "POST")
 
 	if err != nil {
 		t.Error(err)
